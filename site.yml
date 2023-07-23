@@ -5,6 +5,7 @@
   pre_tasks:
 
   - name: install update (centos)
+    tags: always
     dnf:
       update_only: yes
       update_cache: yes
@@ -12,6 +13,7 @@
 
 
   - name: install update (ubuntu)
+    tags: always
     apt:
       upgrade: dist
       update_cache: yes
@@ -24,6 +26,7 @@
  
   # Install apache2 package
   - name: install apache2 package
+    tags: apache,apache2,ubuntu
     apt:
       name: 
         - apache2
@@ -34,6 +37,7 @@
   # Centos
   # Install httpd package
   - name: install httpd package
+    tags: apache,apache2,centos
     dnf:
       name: 
         - httpd
@@ -47,6 +51,7 @@
   tasks:
 
   - name: install maridb
+    tags: database,ubuntu
     apt:
       name: mariadb-server
       state: latest
