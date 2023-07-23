@@ -1,0 +1,54 @@
+---
+# These plays are ran in all servers
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install update (centos)
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+
+  - name: install update (ubuntu)
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+# Below plays will be ran in the servers which are in the web server group
+- hosts: web_servers
+  become: true
+  tasks: 
+ 
+  # Install apache2 package
+  - name: install apache2 package
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  # Centos
+  # Install httpd package
+  - name: install httpd package
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install maridb
+    apt:
+      name: mariadb-server
+      state: latest
+
+    when: ansible_distribution == "Ubuntu"

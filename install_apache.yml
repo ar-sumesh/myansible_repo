@@ -5,11 +5,23 @@
   tasks:
   
  
-  # Install apache package
+  # Install apache2 package
   - name: install apache2 package
-    package:
+    apt:
       name: 
-        - "{{ apache_package }}"
-        - "{{ php_package }}"
+        - apache2
+        - libapache2-mod-php
       state: latest
       update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  # Centos
+  # Install httpd package
+  - name: install httpd package
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
