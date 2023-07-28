@@ -15,7 +15,7 @@
   - name: install update (ubuntu)
     tags: always
     apt:
-      upgrade: dist
+      # upgrade: dist
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
@@ -67,3 +67,21 @@
       state: latest
 
     when: ansible_distribution == "Ubuntu"
+
+#  installing the terraform in the local workstation setup
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: unzip the terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/1.5.4/terraform_1.5.4_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
