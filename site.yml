@@ -45,6 +45,34 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+  # starting centos httpd service
+  - name: start httpd (Centos)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  # changing the httpd configuration file
+  - name: change email address for admin
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin sumesh@example.com
+    when: ansible_distribution == "CentOS"
+    register: httpd # creating a new httpd variable
+
+  # restarting the httpd service
+  - name: restart the httpd (centos)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed # checking the value of the variable httpd which is register in above play
+
+
   # copy files bydefault it searches under the files directory
   - name: copy default html file for site
     tags: apache,apache2,httpd
