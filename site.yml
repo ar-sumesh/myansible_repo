@@ -4,19 +4,19 @@
   become: true
   pre_tasks:
 
-  - name: install update (centos)
+  - name: run index update (centos)
     tags: always
     dnf:
-      update_only: yes
       update_cache: yes
+    changed_when: false # it keeps the changed value in the output 0 will not considered this task status in the output
     when: ansible_distribution == "CentOS"
 
 
-  - name: install update (ubuntu)
+  - name: run index update (ubuntu)
     tags: always
     apt:
-      # upgrade: dist
       update_cache: yes
+    changed_when: false
     when: ansible_distribution == "Ubuntu"
 
 # below play is there to create user in the server 
@@ -24,26 +24,13 @@
   become: true
   tasks:
   
-  - name: create simone user
-    tags: always
-    user:
-      name: simone
-      groups: root
-
   - name: add ssh authorized key
     tags: always
     authorized_key:
       user: simone
       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILka1m9fw9qKroEDSEtjwXuLxfzlbxdVwXWmXL3x+meT ansible"
 
-  - name: add sudoers file for simone user
-    tags: always
-    copy:
-      src: sudoer_simone
-      dest: /etc/sudoers.d/simone
-      owner: root
-      group: root
-      mode: 0440
+  # whenever the ssh key got compromised then you can change the state of authorized_key module to absent it will remove the keys from the servers then you can add the new key with the new play.
 
     
 # Below plays will be ran in the servers which are in the web server group
