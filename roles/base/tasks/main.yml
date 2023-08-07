@@ -1,0 +1,4 @@
+- name: add ssh authorized key
+  authorized_key:
+    user: simone
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILka1m9fw9qKroEDSEtjwXuLxfzlbxdVwXWmXL3x+meT ansible"

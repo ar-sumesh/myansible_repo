@@ -1,0 +1,129 @@
+---
+# These plays are ran in all servers
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: run index update (centos)
+    tags: always
+    dnf:
+      update_cache: yes
+    changed_when: false # it keeps the changed value in the output 0 will not considered this task status in the output
+    when: ansible_distribution == "CentOS"
+
+
+  - name: run index update (ubuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+# below play is there to create user in the server 
+- hosts: all
+  become: true
+  tasks:
+  
+  - name: add ssh authorized key
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILka1m9fw9qKroEDSEtjwXuLxfzlbxdVwXWmXL3x+meT ansible"
+
+  # whenever the ssh key got compromised then you can change the state of authorized_key module to absent it will remove the keys from the servers then you can add the new key with the new play.
+
+    
+# Below plays will be ran in the servers which are in the web server group
+- hosts: web_servers
+  become: true
+  tasks: 
+ 
+  # Install apache2 package
+  - name: install apache2 package
+    tags: apache,apache2,ubuntu
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  # Centos
+  # Install httpd package
+  - name: install httpd package
+    tags: apache,apache2,centos
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  # starting centos httpd service
+  - name: start httpd (Centos)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  # changing the httpd configuration file
+  - name: change email address for admin
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin sumesh@example.com
+    when: ansible_distribution == "CentOS"
+    register: httpd # creating a new httpd variable
+
+  # restarting the httpd service
+  - name: restart the httpd (centos)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed # checking the value of the variable httpd which is register in above play
+
+
+  # copy files bydefault it searches under the files directory
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install maridb
+    tags: database,ubuntu
+    apt:
+      name: mariadb-server
+      state: latest
+
+    when: ansible_distribution == "Ubuntu"
+
+#  installing the terraform in the local workstation setup
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: unzip the terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/1.5.4/terraform_1.5.4_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root

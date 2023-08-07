@@ -1,0 +1,54 @@
+# Install apache2 package
+- name: install apache2 package
+  tags: apache,apache2,ubuntu
+  apt:
+    name: 
+      - apache2
+      - libapache2-mod-php
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+# Centos
+# Install httpd package
+- name: install httpd package
+  tags: apache,apache2,centos
+  dnf:
+    name: 
+      - httpd
+      - php
+    state: latest
+  when: ansible_distribution == "CentOS"
+# starting centos httpd service
+- name: start httpd (Centos)
+  tags: apache,centos,httpd
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  when: ansible_distribution == "CentOS"
+# changing the httpd configuration file
+- name: change email address for admin
+  tags: apache,centos,httpd
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^ServerAdmin'
+    line: ServerAdmin sumesh@example.com
+  when: ansible_distribution == "CentOS"
+  register: httpd # creating a new httpd variable
+# restarting the httpd service
+- name: restart the httpd (centos)
+  tags: apache,centos,httpd
+  service:
+    name: httpd
+    state: restarted
+  when: httpd.changed # checking the value of the variable httpd which is register in above play
+
+
+# copy files bydefault it searches under the files directory
+- name: copy default html file for site
+  tags: apache,apache2,httpd
+  copy:
+    src: default_site.html
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: 0644
